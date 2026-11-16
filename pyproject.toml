@@ -1,0 +1,52 @@
+[project]
+name = "shoprec"
+version = "0.1.0"
+description = "Two-stage e-commerce recommender (two-tower retrieval + LambdaRank) on the H&M dataset"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy>=2.0",
+    "polars>=1.20",
+]
+
+[project.optional-dependencies]
+# Week 1: ALS baseline
+baselines = ["implicit>=0.7.2", "scipy>=1.13"]
+# Weeks 2-3: retrieval and ranking
+models = [
+    "torch>=2.4",
+    "faiss-cpu>=1.9",
+    "lightgbm>=4.5",
+    "mlflow>=2.18",
+]
+# Week 4: serving
+serve = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "redis>=5.2",
+]
+
+[dependency-groups]
+dev = [
+    "kaggle>=1.7",
+    "pytest>=8.3",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/shoprec"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
