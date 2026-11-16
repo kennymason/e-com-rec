@@ -3,7 +3,7 @@ from datetime import date
 import polars as pl
 import pytest
 
-from shoprec.data.split import make_split, window_cutoffs
+from ecomrec.data.split import make_split, window_cutoffs
 
 
 def test_window_cutoffs_are_final_two_weeks():

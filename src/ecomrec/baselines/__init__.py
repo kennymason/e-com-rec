@@ -4,7 +4,8 @@
 - ``recommend(customers, n)``: return ``customer_idx``, ``article_id`` (ranked list of n)
 """
 
-from shoprec.baselines.popularity import Popularity
-from shoprec.baselines.repurchase import Repurchase
+from ecomrec.baselines.implicit_models import ALS, CoPurchase
+from ecomrec.baselines.popularity import Popularity
+from ecomrec.baselines.repurchase import Repurchase
 
-__all__ = ["Popularity", "Repurchase"]
+__all__ = ["ALS", "CoPurchase", "Popularity", "Repurchase"]

@@ -4,14 +4,16 @@ import argparse
 
 import polars as pl
 
-from shoprec.baselines import Popularity, Repurchase
-from shoprec.config import RETRIEVAL_K, TOP_K, dataset_dir
-from shoprec.data.split import make_split, window_cutoffs
-from shoprec.eval.evaluate import evaluate
+from ecomrec.baselines import ALS, CoPurchase, Popularity, Repurchase
+from ecomrec.config import RETRIEVAL_K, TOP_K, dataset_dir
+from ecomrec.data.split import make_split, window_cutoffs
+from ecomrec.eval.evaluate import evaluate
 
 MODELS = {
     "Popularity": Popularity,
     "Repurchase + popular": Repurchase,
+    "Item-to-item co-purchase": CoPurchase,
+    "ALS": ALS,
 }
 
 

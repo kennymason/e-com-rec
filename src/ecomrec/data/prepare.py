@@ -19,7 +19,7 @@ from pathlib import Path
 
 import polars as pl
 
-from shoprec.config import RAW_DIR, dataset_dir
+from ecomrec.config import RAW_DIR, dataset_dir
 
 
 def prepare(

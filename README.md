@@ -1,24 +1,41 @@
-# ShopRec
+# EComRec
 
 Two-stage e-commerce recommender: two-tower retrieval + FAISS + LightGBM ranking on 31M H&M
 transactions, with multimodal cold-start and a FastAPI service under 50 ms p99.
 
-**Status:** Week 1 in progress. The data pipeline, time-based split, evaluation harness and the
-first two baselines are in place. Nothing has been run on the real data yet.
+**Status:** Week 1 done. The data pipeline, time-based split, evaluation harness and the full
+baseline ladder are in place and measured on the full data. Next is the two-tower retriever.
 
 ## Results
 
-Time-based holdout, final week as test. Filled in as each model lands.
+Full data, time-based holdout. Test week is 16–22 September 2020: 68,984 customers with a
+purchase, and 667 articles that had never sold before.
 
 | Model | Recall@100 | NDCG@12 | MAP@12 | New-item Recall@100 |
 | --- | --- | --- | --- | --- |
-| Popularity | – | – | – | – |
-| Repurchase + popular | – | – | – | – |
-| Item-to-item co-purchase | – | – | – | – |
-| ALS | – | – | – | – |
+| Popularity (last 7 days) | 0.1181 | 0.0158 | 0.0087 | 0.0000 |
+| Repurchase + popular | 0.1224 | 0.0341 | 0.0247 | 0.0000 |
+| Item-to-item co-purchase | 0.1285 | 0.0361 | 0.0245 | 0.0000 |
+| ALS | 0.1424 | 0.0321 | 0.0207 | 0.0000 |
 | Two-tower only | – | – | – | – |
 | Two-tower + ranker | – | – | – | – |
 | + content item tower | – | – | – | – |
+
+What the baselines show so far:
+
+- **Repurchase is hard to beat at the top of the list.** Co-purchase edges it on NDCG@12, but
+  the 95% bootstrap intervals nearly touch (0.0351–0.0371 vs 0.0331–0.0352) and MAP@12 is level.
+- **ALS is the best retriever and the worst ranker of the three personalized baselines.** It has
+  the highest Recall@100 but lower NDCG@12 than plain repurchase. That is the gap a ranking
+  stage is meant to close.
+- **No baseline can recommend a new product.** New-item recall is zero by construction, which is
+  the starting point for the content-based item tower.
+- **Recency matters more than volume.** Co-purchase and ALS use only the last 28 days of
+  history. On the validation week that beat 56 days and longer for both models.
+
+The history window (and ALS `alpha=40`) were chosen on the validation week; nothing else is
+tuned. Reproduce with `make baselines WINDOW=test`, which also prints confidence intervals,
+catalog coverage and popularity bias.
 
 ## Quickstart
 
@@ -34,18 +51,19 @@ make baselines DATASET=sample WINDOW=val
 make test
 ```
 
-`make prepare` and `make baselines` do the same on the full data.
+`make prepare` and `make baselines` do the same on the full data. The full baseline run takes
+about a minute on a laptop.
 
 ## Layout
 
 ```
-src/shoprec/
+src/ecomrec/
   config.py           paths and constants (k=12, 7-day windows)
   data/prepare.py     raw CSV -> typed Parquet, optional customer sampling
   data/split.py       cutoff-date splits, val/test windows, new-items slice
   eval/metrics.py     Recall@k, MAP@k (Kaggle definition), NDCG@k, bootstrap CI
   eval/evaluate.py    scores a model's recommendations on a split
-  baselines/          popularity, repurchase + popular, and the runner
+  baselines/          popularity, repurchase, co-purchase, ALS, and the runner
 tests/                metrics, split leakage, baselines, data preparation
 ```
 

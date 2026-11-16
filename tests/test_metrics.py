@@ -2,7 +2,7 @@ import math
 
 import pytest
 
-from shoprec.eval.metrics import ap_at_k, bootstrap_ci, ndcg_at_k, recall_at_k
+from ecomrec.eval.metrics import ap_at_k, bootstrap_ci, ndcg_at_k, recall_at_k
 
 
 def test_recall():

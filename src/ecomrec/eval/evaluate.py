@@ -5,9 +5,9 @@ import math
 import numpy as np
 import polars as pl
 
-from shoprec.config import RETRIEVAL_K, TOP_K
-from shoprec.data.split import Split
-from shoprec.eval.metrics import ap_at_k, bootstrap_ci, ndcg_at_k, recall_at_k
+from ecomrec.config import RETRIEVAL_K, TOP_K
+from ecomrec.data.split import Split
+from ecomrec.eval.metrics import ap_at_k, bootstrap_ci, ndcg_at_k, recall_at_k
 
 
 def evaluate(

@@ -10,7 +10,7 @@ from datetime import date, timedelta
 
 import polars as pl
 
-from shoprec.config import HORIZON_DAYS
+from ecomrec.config import HORIZON_DAYS
 
 
 @dataclass(frozen=True)
@@ -32,9 +32,7 @@ def window_cutoffs(max_date: date, horizon_days: int = HORIZON_DAYS) -> dict[str
     return {"val": test - timedelta(days=horizon_days), "test": test}
 
 
-def make_split(
-    transactions: pl.DataFrame, cutoff: date, horizon_days: int = HORIZON_DAYS
-) -> Split:
+def make_split(transactions: pl.DataFrame, cutoff: date, horizon_days: int = HORIZON_DAYS) -> Split:
     end = cutoff + timedelta(days=horizon_days)
     history = transactions.filter(pl.col("t_dat") < cutoff)
     window = transactions.filter((pl.col("t_dat") >= cutoff) & (pl.col("t_dat") < end))
