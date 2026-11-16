@@ -1,0 +1,31 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Data and artifacts (never commit: H&M data is licensed, and large)
+/data/
+mlruns/
+artifacts/
+*.parquet
+*.faiss
+*.pt
+*.onnx
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+dist/
+build/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+ecom-rec.md
