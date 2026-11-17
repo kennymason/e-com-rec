@@ -3,8 +3,8 @@
 Two-stage e-commerce recommender: two-tower retrieval + FAISS + LightGBM ranking on 31M H&M
 transactions, with multimodal cold-start and a FastAPI service under 50 ms p99.
 
-**Status:** Week 1 done. The data pipeline, time-based split, evaluation harness and the full
-baseline ladder are in place and measured on the full data. Next is the two-tower retriever.
+**Status:** Week 2 done. The baseline ladder and the two-tower retriever (with a FAISS index
+and MLflow tracking) are measured on the full data. Next is the ranking stage.
 
 ## Results
 
@@ -17,11 +17,11 @@ purchase, and 667 articles that had never sold before.
 | Repurchase + popular | 0.1224 | 0.0341 | 0.0247 | 0.0000 |
 | Item-to-item co-purchase | 0.1285 | 0.0361 | 0.0245 | 0.0000 |
 | ALS | 0.1424 | 0.0321 | 0.0207 | 0.0000 |
-| Two-tower only | – | – | – | – |
+| Two-tower only | 0.1523 | 0.0264 | 0.0155 | 0.0000 |
 | Two-tower + ranker | – | – | – | – |
 | + content item tower | – | – | – | – |
 
-What the baselines show so far:
+What the results show so far:
 
 - **Repurchase is hard to beat at the top of the list.** Co-purchase edges it on NDCG@12, but
   the 95% bootstrap intervals nearly touch (0.0351–0.0371 vs 0.0331–0.0352) and MAP@12 is level.
@@ -32,10 +32,22 @@ What the baselines show so far:
   the starting point for the content-based item tower.
 - **Recency matters more than volume.** Co-purchase and ALS use only the last 28 days of
   history. On the validation week that beat 56 days and longer for both models.
+- **The two-tower model is the best retriever, and not yet a good ranker.** It beats ALS on
+  Recall@100 by 7% (0.1523 vs 0.1424) but its NDCG@12 is below every personalized baseline.
+  It is a candidate generator; ordering the top 12 is the ranker's job.
+- **The logQ correction is not optional.** Without it, in-batch negatives punish popular items
+  and Recall@100 collapsed from about 0.07 to 0.015 on the 10% sample.
+- **Recency helped the neural model as much as the baselines.** Training on 28 days instead of
+  56, indexing only articles sold in the last 14 days, and telling the user tower how long ago
+  the customer last bought took validation Recall@100 from 0.119 to 0.143.
 
-The history window (and ALS `alpha=40`) were chosen on the validation week; nothing else is
-tuned. Reproduce with `make baselines WINDOW=test`, which also prints confidence intervals,
-catalog coverage and popularity bias.
+Tuning used the validation week only: the baselines' history window and ALS `alpha=40`, and
+the two-tower training window, epoch count and index window. The test week was run once per
+model. Each number is a single run (one seed), and only NDCG@12 and MAP@12 have confidence
+intervals so far.
+
+Reproduce with `make baselines WINDOW=test` and `make two-tower WINDOW=test`. Both also print
+confidence intervals, catalog coverage and popularity bias.
 
 ## Quickstart
 
@@ -48,11 +60,17 @@ make setup              # install dependencies (Python 3.12 is fetched by uv)
 make download           # the three CSV tables, about 3.5 GB; images are skipped for now
 make prepare-sample     # CSV -> Parquet for 10% of customers
 make baselines DATASET=sample WINDOW=val
+make two-tower DATASET=sample WINDOW=val
 make test
 ```
 
-`make prepare` and `make baselines` do the same on the full data. The full baseline run takes
-about a minute on a laptop.
+`make prepare`, `make baselines` and `make two-tower` do the same on the full data. On a
+laptop CPU the full baseline run takes about a minute and two-tower training about three.
+
+`make two-tower` trains the model, logs the run to MLflow (`uv run mlflow ui` to browse it),
+exports embeddings to `artifacts/`, then evaluates retrieval again through a FAISS index in a
+separate process. torch and faiss cannot share a process on macOS, so training and indexing
+stay apart, as they will in serving.
 
 ## Layout
 
@@ -63,13 +81,19 @@ src/ecomrec/
   data/split.py       cutoff-date splits, val/test windows, new-items slice
   eval/metrics.py     Recall@k, MAP@k (Kaggle definition), NDCG@k, bootstrap CI
   eval/evaluate.py    scores a model's recommendations on a split
+  eval/report.py      window loading and results-table rows for the CLIs
   baselines/          popularity, repurchase, co-purchase, ALS, and the runner
-tests/                metrics, split leakage, baselines, data preparation
+  retrieval/
+    features.py       item attribute codes, leakage-safe purchase-history windows
+    model.py          two-tower model, in-batch softmax loss with logQ correction
+    two_tower.py      training, inference and embedding export
+    train.py          training CLI with MLflow tracking
+    index.py          FAISS index and its evaluation CLI
+tests/                metrics, split leakage, baselines, retrieval, data preparation
 ```
 
-Later stages will add `retrieval/` (two-tower, FAISS), `ranking/` (candidates, LightGBM) and
-`serving/` (FastAPI). Their dependencies are already declared as extras:
-`uv sync --extra baselines --extra models --extra serve`.
+Later stages will add `ranking/` (candidates, LightGBM) and `serving/` (FastAPI). The serving
+dependencies are already declared as an extra: `uv sync --extra serve`.
 
 ## Evaluation rules
 

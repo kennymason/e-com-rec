@@ -43,6 +43,8 @@ packages = ["src/ecomrec"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not faiss'"
+markers = ["faiss: imports faiss; must not share a process with torch on macOS"]
 # implicit converts its own internal matrix and warns about it
 filterwarnings = ["ignore:Method expects CSR input"]
 
