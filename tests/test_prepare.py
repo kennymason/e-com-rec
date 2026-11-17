@@ -2,7 +2,7 @@ from datetime import date
 
 import polars as pl
 
-from shoprec.data.prepare import prepare
+from ecomrec.data.prepare import prepare
 
 CUSTOMERS = """customer_id,FN,Active,club_member_status,fashion_news_frequency,age,postal_code
 aaa,,,ACTIVE,NONE,49.0,p1

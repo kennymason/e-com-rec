@@ -1,5 +1,5 @@
 [project]
-name = "shoprec"
+name = "ecomrec"
 version = "0.1.0"
 description = "Two-stage e-commerce recommender (two-tower retrieval + LambdaRank) on the H&M dataset"
 readme = "README.md"
@@ -39,10 +39,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/shoprec"]
+packages = ["src/ecomrec"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not faiss'"
+markers = ["faiss: imports faiss; must not share a process with torch on macOS"]
+# implicit converts its own internal matrix and warns about it
+filterwarnings = ["ignore:Method expects CSR input"]
 
 [tool.ruff]
 line-length = 100

@@ -4,7 +4,7 @@ from datetime import date
 
 import polars as pl
 
-from shoprec.baselines.popularity import Popularity
+from ecomrec.baselines.popularity import Popularity
 
 
 class Repurchase:

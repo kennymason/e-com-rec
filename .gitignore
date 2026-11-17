@@ -6,6 +6,7 @@
 # Data and artifacts (never commit: H&M data is licensed, and large)
 /data/
 mlruns/
+mlflow.db
 artifacts/
 *.parquet
 *.faiss

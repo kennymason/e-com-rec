@@ -4,9 +4,9 @@ from datetime import date
 import polars as pl
 import pytest
 
-from shoprec.baselines import Popularity, Repurchase
-from shoprec.data.split import make_split
-from shoprec.eval.evaluate import evaluate
+from ecomrec.baselines import Popularity, Repurchase
+from ecomrec.data.split import make_split
+from ecomrec.eval.evaluate import evaluate
 
 CUTOFF = date(2020, 9, 15)
 
